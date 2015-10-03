@@ -13,27 +13,74 @@ db.pGetDB
 		collection = db.collection('stamps');
 	});
 
-router.get('/search', function(req, res) {
+router.get('/search', getImageByKeywords);
+router.get('/all', getImageAll);
+router.post('/', registerNewImage);
+router.delete('/:id', deleteImageById);
+
+function getImageByKeywords(req, res) {
 	var query = req.query,
 		keywords = (query.q || '').split(QUERY_DELIMITER);
 
-	// collection.find({
-	// 	keywords: keywords
-	// }, function(err, docs) {
-	// 	if (err) return sendError(res, err);
-	//
-	// 	res.json(docs);
-	// });
-	res.json([
-		'http://e-village.main.jp/gazou/image_gazou/gazou_0374.jpg',
-		'http://e-village.main.jp/gazou/image_gazou/gazou_0378.jpg'
-	]);
-});
+	console.log('getImageByKeywords');
+	console.log(keywords);
 
-router.post('/', function(req, res) {
+	if (keywords.length === 0 ||
+		(keywords.length === 1 && keywords[0] === '')) {
+		return getImageAll(req, res);
+	}
+
+	collection.find({
+		keywords: {
+			$in: keywords
+		}
+	}).toArray(function(err, docs) {
+		if (err) return sendError(res, err);
+
+		res.json(docs.map(function(doc) {
+			return doc.url;
+		}));
+	});
+}
+
+function getImageAll(req, res) {
+	var query = req.query,
+		from, count;
+
+	console.log('getImageAll');
+
+	if (query) {
+		console.log(query);
+		from = parseInt(query.from) || 0;
+		count = parseInt(query.count) || 20;
+	} else {
+		console.log('query: none');
+		from = 0;
+		count = 20;
+	}
+
+	collection.find({
+		_id: {
+			$gt: new ObjectId(from)
+		}
+	}).limit(count).toArray(function(err, docs) {
+		if (err) return sendError(res, err);
+
+		res.json(docs.map(function(doc) {
+			return doc.url;
+		}));
+	});
+}
+
+function registerNewImage(req, res) {
 	var body = req.body,
-		url = body.url,
-		keywords = (body.q || '').split(QUERY_DELIMITER);
+		url, keywords;
+
+	console.log('registerNewImage');
+	console.log(body);
+
+	url = body.url;
+	keywords = (body.q || '').split(QUERY_DELIMITER);
 
 	collection.insert({
 		keywords: keywords,
@@ -43,10 +90,13 @@ router.post('/', function(req, res) {
 
 		res.json('');
 	});
-});
+}
 
-router.delete('/:id', function(req, res) {
+function deleteImageById(req, res) {
 	var id = req.params.id;
+
+	console.log('deleteImageById');
+	console.log(id);
 
 	collection.remove({
 		_id: new ObjectId(id)
@@ -55,23 +105,7 @@ router.delete('/:id', function(req, res) {
 
 		res.json('');
 	});
-});
-
-router.get('/all', function(req, res) {
-	var query = req.query,
-		from = parseInt(query.from) || 0,
-		count = parseInt(query.count) || 20;
-
-	collection.find({
-		_id: {
-			$gt: new ObjectId(from)
-		}
-	}).limit(count).toArray(function(err, docs) {
-		if (err) return sendError(res, err);
-
-		res.json(docs);
-	});
-});
+}
 
 function sendError(res, err) {
 	console.error(err);
