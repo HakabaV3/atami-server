@@ -1,0 +1,1 @@
+scp -r ./app ./static ./nginx.conf ./package.json install stoguVPS:~/server/
