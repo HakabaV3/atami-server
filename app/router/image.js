@@ -32,6 +32,10 @@ function getImageByKeywords(req, res) {
 		return getImageAll(req, res);
 	}
 
+	keywords = keywords.map(function(keyword) {
+		return new RegExp(keyword);
+	});
+
 	collection.find({
 		keywords: {
 			$in: keywords
@@ -51,12 +55,16 @@ function getImageAll(req, res) {
 
 	if (query) {
 		console.log(query);
-		from = parseInt(query.from) || 0;
+		from = query.from;
 		count = parseInt(query.count) || 20;
 	} else {
 		console.log('query: none');
-		from = 0;
+		from = '000000000000000000000000';
 		count = 20;
+	}
+
+	if (from.length != 24) {
+		from = '000000000000000000000000';
 	}
 
 	collection.find({

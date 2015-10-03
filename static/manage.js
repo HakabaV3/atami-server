@@ -65,7 +65,7 @@ function fetchList() {
 
 function render(datas) {
 	var template = '<tr>' +
-		'<td>{{id}}</td>' +
+		'<td><a target="_blank" href="{{proxiedUrl}}">{{id}}</a></td>' +
 		'<td><a target="_blank" href="{{url}}">{{url}}</a></td>' +
 		'<td>{{keywords}}</td>' +
 		'<td><button onclick="fetchDelete(\'{{id}}\')" class="btn btn-danger">削除</button></td>' +
@@ -78,6 +78,7 @@ function render(datas) {
 
 			return template
 				.replace(/\{\{id\}\}/g, data._id)
+				.replace(/\{\{proxiedUrl\}\}/g, data.proxiedUrl)
 				.replace(/\{\{url\}\}/g, data.url)
 				.replace(/\{\{keywords\}\}/g, keywords);
 		})
