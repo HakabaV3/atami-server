@@ -3,7 +3,8 @@ var QUERY_DELIMITER = ',';
 
 var express = require('express'),
 	ObjectId = require('mongodb').ObjectId,
-	db = require('../util/db.js');
+	db = require('../util/db.js'),
+	request = require('request');
 
 var router = new express.Router();
 var collection;
@@ -15,6 +16,7 @@ db.pGetDB
 
 router.get('/search', getImageByKeywords);
 router.get('/all', getImageAll);
+router.get('/:id', getImageById);
 router.post('/', registerNewImage);
 router.delete('/:id', deleteImageById);
 
@@ -37,9 +39,7 @@ function getImageByKeywords(req, res) {
 	}).toArray(function(err, docs) {
 		if (err) return sendError(res, err);
 
-		res.json(docs.map(function(doc) {
-			return doc.url;
-		}));
+		res.json(docs);
 	});
 }
 
@@ -66,25 +66,42 @@ function getImageAll(req, res) {
 	}).limit(count).toArray(function(err, docs) {
 		if (err) return sendError(res, err);
 
-		res.json(docs.map(function(doc) {
-			return doc.url;
-		}));
+		res.json(docs);
+	});
+}
+
+function getImageById(req, res) {
+	var id = req.params.id;
+
+	console.log('getImageById');
+	console.log(id);
+
+	collection.findOne({
+		_id: new ObjectId(id)
+	}, function(err, doc) {
+		if (err || !doc) return sendError(res, err);
+
+		request(doc.url).pipe(res);
 	});
 }
 
 function registerNewImage(req, res) {
 	var body = req.body,
-		url, keywords;
+		url, keywords, id, proxiedUrl;
 
 	console.log('registerNewImage');
 	console.log(body);
 
 	url = body.url;
 	keywords = (body.q || '').split(QUERY_DELIMITER);
+	id = new ObjectId();
+	proxiedUrl = 'http://atami.kikurage.xyz/image/' + id.toString();
 
 	collection.insert({
+		_id: id,
 		keywords: keywords,
-		url: url
+		url: url,
+		proxiedUrl: proxiedUrl
 	}, function(err) {
 		if (err) return sendError(res, err);
 
