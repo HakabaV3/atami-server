@@ -40,6 +40,16 @@ function fetchRegister() {
 	});
 }
 
+function fetchDelete(id) {
+	$.ajax({
+		type: 'delete',
+		url: '/image/' + id,
+		success: function() {
+			fetchList();
+		}
+	});
+}
+
 function fetchList() {
 	var from = $('#from').val(),
 		count = $('#count').val();
@@ -58,6 +68,7 @@ function render(datas) {
 		'<td>{{id}}</td>' +
 		'<td><a target="_blank" href="{{url}}">{{url}}</a></td>' +
 		'<td>{{keywords}}</td>' +
+		'<td><button onclick="fetchDelete(\'{{id}}\')" class="btn btn-danger">削除</button></td>' +
 		'</tr>';
 
 	var html = datas.map(function(data) {

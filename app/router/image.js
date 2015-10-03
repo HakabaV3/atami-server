@@ -45,6 +45,18 @@ router.post('/', function(req, res) {
 	});
 });
 
+router.delete('/:id', function(req, res) {
+	var id = req.params.id;
+
+	collection.remove({
+		_id: new ObjectId(id)
+	}, function(err) {
+		if (err) return sendError(res, err);
+
+		res.json('');
+	});
+});
+
 router.get('/all', function(req, res) {
 	var query = req.query,
 		from = parseInt(query.from) || 0,
