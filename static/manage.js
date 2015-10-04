@@ -51,13 +51,7 @@ function fetchDelete(id) {
 }
 
 function fetchList() {
-	var from = $('#from').val(),
-		count = $('#count').val();
-
-	$.get('/image/all', {
-			from: from,
-			count: count
-		})
+	$.get('/image/all')
 		.done(function(datas) {
 			render(datas);
 		});
@@ -65,6 +59,7 @@ function fetchList() {
 
 function render(datas) {
 	var template = '<tr>' +
+		'<td><img src="{{url}}" class="preview"></td>' +
 		'<td><a target="_blank" href="{{proxiedUrl}}">{{id}}</a></td>' +
 		'<td><a target="_blank" href="{{url}}">{{url}}</a></td>' +
 		'<td>{{keywords}}</td>' +

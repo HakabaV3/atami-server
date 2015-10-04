@@ -15,6 +15,11 @@
 		.label {
 			margin-right: 16px;
 		}
+		
+		.preview {
+			position: relative;
+			height: 64px;
+		}
 	</style>
 </head>
 
@@ -47,27 +52,12 @@
 	<div class="container-fluid">
 		<h2>List </h2>
 
-		<div class="row" id="list">
-			<div class="col-md-12">
-				<form class="navbar-form navbar-left" role="search">
-					<div class="form-group">
-						<label for="from">fromID</label>
-						<input type="text" class="form-control" id="from" placeholder="0" value="0">
-					</div>
-					<div class="form-group">
-						<label for="count">count</label>
-						<input type="number" class="form-control" id="count" placeholder="20" value="20">
-					</div>
-					<button type="submit" class="btn btn-primary">fetch</button>
-				</form>
-			</div>
-		</div>
-
 		<div class="row">
 			<div class="col-md-12">
 				<table class="table">
 					<thead>
 						<tr>
+							<th></th>
 							<th>ID</th>
 							<th>URL</th>
 							<th>keywords</th>

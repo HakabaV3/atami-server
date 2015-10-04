@@ -52,18 +52,12 @@ function getImageAll(req, res) {
 		from, count;
 
 	console.log('getImageAll');
+	console.log(query);
 
-	if (query) {
-		console.log(query);
-		from = query.from;
-		count = parseInt(query.count) || 20;
-	} else {
-		console.log('query: none');
-		from = '000000000000000000000000';
-		count = 20;
-	}
+	from = query.from || '000000000000000000000000';
+	count = parseInt(query.count) || 20;
 
-	if (from.length != 24) {
+	if (from.length !== 24) {
 		from = '000000000000000000000000';
 	}
 

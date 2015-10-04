@@ -1,1 +1,1 @@
-scp -r ./app ./static ./nginx.conf ./bower.json ./package.json install stoguVPS:~/server/
+scp -r ./app ./static ./nginx.conf ./bower.json ./ssl ./package.json install stoguVPS:~/server/
