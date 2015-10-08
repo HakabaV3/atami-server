@@ -18,8 +18,9 @@ console.log('environment: %s', config.name);
 app.use(require('body-parser').json());
 app.use('/api/v1', require('./router/api.js'));
 app.use('/', [
-	function() {
+	function(req, res, next) {
 		console.error('deprecated entry point is used: / ');
+		next();
 	},
 	require('./router/api.js')
 ]);
