@@ -1,0 +1,1 @@
+scp -r ./src ./static ./nginx.conf ./bower.json ./ssl ./package.json ./bin stoguVPS:~/server/

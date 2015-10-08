@@ -24,7 +24,7 @@ function fetchRegister() {
 
 	$.ajax({
 		type: 'post',
-		url: '/image',
+		url: '/api/v1/image',
 		data: JSON.stringify({
 			url: url,
 			tags: tags
@@ -43,7 +43,7 @@ function fetchRegister() {
 function fetchDelete(id) {
 	$.ajax({
 		type: 'delete',
-		url: '/image/' + id,
+		url: '/api/v1/image/' + id,
 		success: function() {
 			fetchSearch($('#query').val().split(/[\s+,]+/g));
 		}
@@ -53,7 +53,7 @@ function fetchDelete(id) {
 function fetchSearch(query) {
 	$.ajax({
 		type: 'get',
-		url: '/image/search',
+		url: '/api/v1/image/search',
 		data: {
 			q: query
 		},

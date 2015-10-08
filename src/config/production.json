@@ -1,0 +1,9 @@
+{
+	"name": "production",
+	"server": {
+		"port": "8081"
+	},
+	"db": {
+		"url": "mongodb://localhost:27017/atami"
+	}
+}

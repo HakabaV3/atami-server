@@ -20,6 +20,7 @@
     "body-parser": "^1.14.1",
     "express": "^4.13.3",
     "express-http-proxy": "^0.6.0",
+    "mongodb": "^2.0.45",
     "request": "^2.64.0"
   }
 }

@@ -1,10 +1,21 @@
+#!/usr/bin/env node
+
 'use strict';
 
-var express = require('express');
+var express = require('express'),
+	config = require('./config.js');
+
 var app = express();
 
-app.use(require('body-parser').json());
+//switch with environment variable
+if (process.env.DEBUG) {
+	config.$switch('dev');
+} else {
+	config.$switch('production');
+}
+console.log('environment: %s', config.name);
 
+app.use(require('body-parser').json());
 app.use('/api/v1', require('./router/api.js'));
 app.use('/', [
 	function(req, res, next) {
@@ -14,7 +25,7 @@ app.use('/', [
 	require('./router/api.js')
 ]);
 
-var server = app.listen(8080, function() {
+var server = app.listen(config.server.port, function() {
 	var host = server.address().address;
 	var port = server.address().port;
 

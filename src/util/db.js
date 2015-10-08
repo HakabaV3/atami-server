@@ -1,12 +1,14 @@
 'use strict';
 
-var mongodb = require('mongodb');
+var mongodb = require('mongodb'),
+	config = require('../config.js');
 
 var _ = module.exports;
 
 var pGetDB = new Promise(function(resolve, reject) {
-	mongodb.MongoClient.connect('mongodb://localhost:27017/atami', function(err, db) {
+	mongodb.MongoClient.connect(config.db.url, function(err, db) {
 		if (err) {
+			console.log(err);
 			reject(err);
 		} else {
 			_.db = db;
