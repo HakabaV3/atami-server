@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>atami</title>
+	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
+	<style>
+		body {
+			padding-top: 70px;
+		}
+		
+		.label {
+			margin-right: 16px;
+		}
+		
+		.preview {
+			position: relative;
+			height: 64px;
+		}
+	</style>
+</head>
+
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top navbar-inverse">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<span class="navbar-brand">atami</span>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<h2>Register</h2>
+		<form class="row" id="register">
+			<div class="col-md-6">
+				<input type="text" class="form-control" id="url" placeholder="url">
+			</div>
+			<div class="col-md-4">
+				<input type="text" class="form-control" id="tags" placeholder="tags">
+			</div>
+			<div class="col-md-2">
+				<button type="submit" class="btn btn-primary form-control">register</button>
+			</div>
+		</form>
+	</div>
+
+	<hr>
+
+	<div class="container-fluid">
+		<h2>Search </h2>
+
+		<form class="row" id="search">
+			<div class="col-md-10">
+				<input type="text" class="form-control" id="query" placeholder="query">
+			</div>
+			<div class="col-md-2">
+				<button type="submit" class="btn form-control btn-primary">Search</button>
+			</div>
+		</form>
+
+		<hr>
+
+		<div class="row">
+			<div class="col-md-12">
+				<table class="table">
+					<thead>
+						<tr>
+							<th></th>
+							<th>ID</th>
+							<th>URL</th>
+							<th>keywords</th>
+						</tr>
+					</thead>
+					<tbody>
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="/manage.js"></script>
+</body>
+
+</html>

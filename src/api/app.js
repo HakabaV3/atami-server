@@ -5,15 +5,17 @@
 var express = require('express'),
 	config = require('./config.js');
 
-var app = express();
-
 //switch with environment variable
-if (process.env.DEBUG) {
+if (__dirname.match('server-dev')) {
 	config.$switch('dev');
 } else {
 	config.$switch('production');
 }
 console.log('environment: %s', config.name);
+
+
+
+var app = express();
 
 app.use(require('body-parser').json());
 app.use('/api/v1', require('./router/api.js'));
