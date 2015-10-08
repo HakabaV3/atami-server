@@ -2,110 +2,92 @@
 var QUERY_DELIMITER = ',';
 
 var express = require('express'),
-	ObjectId = require('mongodb').ObjectId,
-	db = require('../util/db.js'),
-	request = require('request');
+	request = require('request'),
+	Image = require('../model/image.js');
 
 var router = new express.Router();
-var collection;
 
-db.pGetDB
-	.then(function(db) {
-		collection = db.collection('stamps');
-	});
-
-router.get('/search', getImageByKeywords);
+router.post('/:id/tag', postTag);
+router.delete('/:id/tag', deleteTag);
+router.get('/search', getImageSearch);
 router.get('/all', getImageAll);
 router.get('/:id', getImageById);
-router.post('/', registerNewImage);
+router.post('/', postImage);
 router.delete('/:id', deleteImageById);
 
-function getImageByKeywords(req, res) {
+function postTag(req, res) {
+	var body = req.body,
+		id = req.params.id,
+		tag = body.tag;
+
+	console.log('postTag');
+	console.log(tag);
+
+	Image.pSetTag(id, tag)
+		.then(function() {
+			res.send('');
+		})
+		.catch(sendError(res));
+}
+
+function deleteTag(req, res) {
 	var query = req.query,
-		keywords = (query.q || '').split(QUERY_DELIMITER);
+		id = req.params.id,
+		tag = query.tag;
 
-	console.log('getImageByKeywords');
-	console.log(keywords);
+	console.log('deleteTag');
+	console.log(tag);
 
-	if (keywords.length === 0 ||
-		(keywords.length === 1 && keywords[0] === '')) {
+	Image.pUnsetTag(id, tag)
+		.then(function() {
+			res.send('');
+		})
+		.catch(sendError(res));
+}
+
+function getImageSearch(req, res) {
+	var query = (req.query.q || '').split(QUERY_DELIMITER);
+
+	console.log('getImageSearch');
+	console.log(query);
+
+	if (query.length === 0 ||
+		(query.length === 1 && query[0] === '')) {
 		return getImageAll(req, res);
 	}
 
-	keywords = keywords.map(function(keyword) {
-		return new RegExp(keyword);
-	});
-
-	collection.find({
-		keywords: {
-			$in: keywords
-		}
-	}).toArray(function(err, docs) {
-		if (err) return sendError(res, err);
-
-		res.json(docs);
-	});
+	Image.pFindByQuery(query)
+		.then(function(images) {
+			res.json(images);
+		})
+		.catch(sendError(res));
 }
 
 function getImageAll(req, res) {
 	console.log('getImageAll');
 
-	collection.find({
-		// _id: {
-		// 	$gt: new ObjectId(from)
-		// }
-		//@TODO support from & limit
-		// }).limit(count).toArray(function(err, docs) {
-	}).toArray(function(err, docs) {
-		if (err) return sendError(res, err);
-
-		res.json(docs);
-	});
+	Image.pGetAll()
+		.then(function(images) {
+			res.json(images);
+		})
+		.catch(sendError(res));
 }
 
-function getImageById(req, res) {
-	var id = req.params.id;
-
-	console.log('getImageById');
-	console.log(id);
-
-	collection.findOne({
-		_id: new ObjectId(id)
-	}, function(err, doc) {
-		if (err || !doc) {
-			console.error(err);
-			res.status(404);
-			return;
-		}
-
-		request(doc.url).pipe(res);
-	});
-}
-
-function registerNewImage(req, res) {
+function postImage(req, res) {
 	var body = req.body,
-		url, keywords, id, proxiedUrl;
+		url, tags;
 
-	console.log('registerNewImage');
+	console.log('postImage');
 	console.log(body);
 
 	url = body.url;
-	keywords = (body.q || '').split(QUERY_DELIMITER);
-	id = new ObjectId();
-	proxiedUrl = 'http://atami.kikurage.xyz/image/' + id.toString();
+	tags = body.tags;
 
-	collection.insert({
-		_id: id,
-		_removed: false,
-		created: parseInt(Date.now() / 1000), //adjust for UNIX time format
-		keywords: keywords,
-		url: url,
-		proxiedUrl: proxiedUrl
-	}, function(err) {
-		if (err) return sendError(res, err);
-
-		res.json('');
-	});
+	Image.pCreate(url, tags)
+		.then(function(image) {
+			return res.json(image);
+		})
+		.catch(sendError(res));
 }
 
 function deleteImageById(req, res) {
@@ -114,18 +96,31 @@ function deleteImageById(req, res) {
 	console.log('deleteImageById');
 	console.log(id);
 
-	collection.update({
-		_id: new ObjectId(id)
-	}, function(err) {
-		if (err) return sendError(res, err);
-
-		res.json('');
-	});
+	Image.pRemove(id)
+		.then(function() {
+			res.send('');
+		})
+		.catch(sendError(res));
 }
 
-function sendError(res, err) {
-	console.error(err);
-	res.sendStatus(500);
+function getImageById(req, res) {
+	var id = req.params.id;
+
+	console.log('getImageById');
+	console.log(id);
+
+	Image.pFindById(id)
+		.then(function(image) {
+			request(image.url).pipe(res);
+		})
+		.catch(sendError(res));
+}
+
+function sendError(res, status) {
+	return function(err) {
+		console.error(err);
+		res.sendStatus(status || 500);
+	};
 }
 
 module.exports = router;

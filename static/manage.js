@@ -12,29 +12,30 @@ function init() {
 
 	$('#search').on('submit', function(ev) {
 		ev.preventDefault();
-		fetchSearch($('#keywords2').val().split(/[\s+,]+/g));
+		fetchSearch($('#query').val());
 	});
 
-	fetchSearch(['']);
+	fetchSearch('');
 }
 
 function fetchRegister() {
 	var url = $('#url').val(),
-		keywords = $('#keywords').val();
+		tags = $('#tags').val().split(',');
 
 	$.ajax({
 		type: 'post',
 		url: '/image',
 		data: JSON.stringify({
 			url: url,
-			q: keywords
+			tags: tags
 		}),
 		contentType: 'application/JSON',
 		dataType: 'JSON',
 		scriptCharset: 'utf-8',
 		success: function() {
 			$('#url').val('');
-			$('#keywords').val('');
+			$('#tags').val('');
+			fetchSearch($('#query').val());
 		}
 	});
 }
@@ -44,17 +45,17 @@ function fetchDelete(id) {
 		type: 'delete',
 		url: '/image/' + id,
 		success: function() {
-			fetchSearch($('#keywords2').val().split(/[\s+,]+/g));
+			fetchSearch($('#query').val().split(/[\s+,]+/g));
 		}
 	});
 }
 
-function fetchSearch(keywords) {
+function fetchSearch(query) {
 	$.ajax({
 		type: 'get',
 		url: '/image/search',
 		data: {
-			q: keywords.join(',')
+			q: query
 		},
 		success: function(datas) {
 			render(datas.sort(function(a, b) {
@@ -69,12 +70,12 @@ function render(datas) {
 		'<td><img src="{{url}}" class="preview"></td>' +
 		'<td><a target="_blank" href="{{proxiedUrl}}">{{id}}</a></td>' +
 		'<td><a target="_blank" href="{{url}}">{{url}}</a></td>' +
-		'<td>{{keywords}}</td>' +
+		'<td>{{tags}}</td>' +
 		'<td><button onclick="fetchDelete(\'{{id}}\')" class="btn btn-danger">削除</button></td>' +
 		'</tr>';
 
 	var html = datas.map(function(data) {
-			var keywords = data.keywords.map(function(keyword) {
+			var tags = data.tags.map(function(keyword) {
 				return '<span class="label label-default">' + keyword + '</span>';
 			}).join('');
 
@@ -82,7 +83,7 @@ function render(datas) {
 				.replace(/\{\{id\}\}/g, data._id)
 				.replace(/\{\{proxiedUrl\}\}/g, data.proxiedUrl)
 				.replace(/\{\{url\}\}/g, data.url)
-				.replace(/\{\{keywords\}\}/g, keywords);
+				.replace(/\{\{tags\}\}/g, tags);
 		})
 		.join('');
 
