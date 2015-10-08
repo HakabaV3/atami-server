@@ -4,6 +4,6 @@ var express = require('express');
 
 var router = new express.Router();
 
-router.use('/image', require('./router/image.js'));
+router.use('/image', require('./image.js'));
 
 module.exports = router;

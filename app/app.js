@@ -6,7 +6,12 @@ var app = express();
 app.use(require('body-parser').json());
 
 app.use('/api/v1', require('./router/api.js'));
-app.use('/', require('./router/api.js'));
+app.use('/', [
+	function() {
+		console.error('deprecated entry point is used: / ');
+	},
+	require('./router/api.js')
+]);
 
 var server = app.listen(8080, function() {
 	var host = server.address().address;
