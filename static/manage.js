@@ -58,7 +58,7 @@ function fetchSearch(keywords) {
 		},
 		success: function(datas) {
 			render(datas.sort(function(a, b) {
-				return a._id > b._id ? -1 : a._id < b._id ? 1 : 0;
+				return a.created > b.created ? -1 : a.created < b.created ? 1 : 0;
 			}));
 		}
 	});
