@@ -4,7 +4,9 @@ var express = require('express');
 var app = express();
 
 app.use(require('body-parser').json());
-app.use('/image', require('./router/image.js'));
+
+app.use('/api/v1', require('./router/api.js'));
+app.use('/', require('./router/api.js'));
 
 var server = app.listen(8080, function() {
 	var host = server.address().address;
