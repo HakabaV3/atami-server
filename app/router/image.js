@@ -48,24 +48,15 @@ function getImageByKeywords(req, res) {
 }
 
 function getImageAll(req, res) {
-	var query = req.query,
-		from, count;
-
 	console.log('getImageAll');
-	console.log(query);
-
-	from = query.from || '000000000000000000000000';
-	count = parseInt(query.count) || 20;
-
-	if (from.length !== 24) {
-		from = '000000000000000000000000';
-	}
 
 	collection.find({
-		_id: {
-			$gt: new ObjectId(from)
-		}
-	}).limit(count).toArray(function(err, docs) {
+		// _id: {
+		// 	$gt: new ObjectId(from)
+		// }
+		//@TODO support from & limit
+		// }).limit(count).toArray(function(err, docs) {
+	}).toArray(function(err, docs) {
 		if (err) return sendError(res, err);
 
 		res.json(docs);

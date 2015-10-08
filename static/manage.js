@@ -10,12 +10,12 @@ function init() {
 		fetchRegister();
 	});
 
-	$('#list').on('submit', function(ev) {
+	$('#search').on('submit', function(ev) {
 		ev.preventDefault();
-		fetchList();
+		fetchSearch($('#keywords2').val().split(/[\s+,]+/g));
 	});
 
-	fetchList();
+	fetchSearch(['']);
 }
 
 function fetchRegister() {
@@ -33,7 +33,6 @@ function fetchRegister() {
 		dataType: 'JSON',
 		scriptCharset: 'utf-8',
 		success: function() {
-			fetchList();
 			$('#url').val('');
 			$('#keywords').val('');
 		}
@@ -45,16 +44,22 @@ function fetchDelete(id) {
 		type: 'delete',
 		url: '/image/' + id,
 		success: function() {
-			fetchList();
+			fetchSearch($('#keywords2').val().split(/[\s+,]+/g));
 		}
 	});
 }
 
-function fetchList() {
-	$.get('/image/all')
-		.done(function(datas) {
+function fetchSearch(keywords) {
+	$.ajax({
+		type: 'get',
+		url: '/image/search',
+		data: {
+			q: keywords.join(',')
+		},
+		success: function(datas) {
 			render(datas);
-		});
+		}
+	});
 }
 
 function render(datas) {
