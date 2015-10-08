@@ -45,7 +45,7 @@ function fetchDelete(id) {
 		type: 'delete',
 		url: '/api/v1/image/' + id,
 		success: function() {
-			fetchSearch($('#query').val().split(/[\s+,]+/g));
+			fetchSearch($('#query').val());
 		}
 	});
 }
