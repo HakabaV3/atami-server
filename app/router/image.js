@@ -72,7 +72,11 @@ function getImageById(req, res) {
 	collection.findOne({
 		_id: new ObjectId(id)
 	}, function(err, doc) {
-		if (err || !doc) return sendError(res, err);
+		if (err || !doc) {
+			console.error(err);
+			res.status(404);
+			return;
+		}
 
 		request(doc.url).pipe(res);
 	});
@@ -92,6 +96,8 @@ function registerNewImage(req, res) {
 
 	collection.insert({
 		_id: id,
+		_removed: false,
+		created: parseInt(Date.now() / 1000), //adjust for UNIX time format
 		keywords: keywords,
 		url: url,
 		proxiedUrl: proxiedUrl
@@ -108,7 +114,7 @@ function deleteImageById(req, res) {
 	console.log('deleteImageById');
 	console.log(id);
 
-	collection.remove({
+	collection.update({
 		_id: new ObjectId(id)
 	}, function(err) {
 		if (err) return sendError(res, err);
