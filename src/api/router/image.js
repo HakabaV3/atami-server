@@ -119,7 +119,7 @@ function getImageById(req, res) {
 	console.log('getImageById');
 	console.log(id);
 
-	Image.pGetFileStream(id)
+	Image.pGetCacheeOrigianlFileStream(id)
 		.then(function(stream) {
 			stream.pipe(res);
 		})

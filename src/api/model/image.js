@@ -12,11 +12,6 @@ var _ = module.exports,
 
 var ROOT = config.cache.root;
 
-db.pGetDB
-	.then(function(db) {
-		collection = db.collection('stamps');
-	});
-
 function pMkdir(dirpath) {
 	return new Promise(function(resolve, reject) {
 		fs.stat(dirpath, function(err, stat) {
@@ -42,6 +37,11 @@ function pMkdir(dirpath) {
 function setup() {
 	pMkdir(path.join(ROOT));
 	pMkdir(path.join(ROOT, './original'));
+
+	db.pGetDB
+		.then(function(db) {
+			collection = db.collection('stamps');
+		});
 }
 
 _.pFindById = function(id) {
@@ -100,7 +100,7 @@ _.pCreate = function(url, tags) {
 			idStr = id.toString(),
 			created = parseInt(Date.now() / 1000), // UNIX Time format
 			proxiedUrl = 'http://atami.kikurage.xyz/image/' + idStr,
-			cacheOriginUri = path.join(ROOT, './original/' + idStr);
+			cacheOriginalUri = path.join(ROOT, './original/' + idStr);
 
 		request(url)
 			.on('end', function() {
@@ -110,55 +110,65 @@ _.pCreate = function(url, tags) {
 					created: created,
 					url: url,
 					proxiedUrl: proxiedUrl,
-					cacheOriginUri: cacheOriginUri
+					cacheOriginalUri: cacheOriginalUri
 				}, function(err, image) {
 					if (err) return reject(image);
 
 					resolve(image);
 				});
 			})
-			.pipe(fs.createWriteStream(cacheOriginUri));
+			.pipe(fs.createWriteStream(cacheOriginalUri));
 	});
 };
 
-_.pGetFileStream = function(id) {
+_.pSetCacheOriginalUrl = function(id) {
+	return _.pUpdate({
+		_id: new ObjectId(id)
+	}, {
+		$set: {
+			cacheOriginalUri: path.join(ROOT, './original/' + id)
+		}
+	});
+};
+
+_.pGetCacheeOrigianlFileStream = function(id) {
 	return _.pFindById(id)
 		.then(function(image) {
-			if (image.cacheOriginUri) return image;
+			if (image.cacheOriginalUri) return image;
 
-			return _.pUpdate({
-					_id: new ObjectId(id)
-				}, {
-					$set: {
-						cacheOriginUri: path.join(ROOT, './original/' + id)
-					}
-				})
+			return _.pSetCacheOriginalUrl(id)
 				.then(function() {
 					return _.pFindById(id);
 				});
 		})
 		.then(function(image) {
-			console.log(image);
-			var cacheOriginUri = image.cacheOriginUri;
-
-			return new Promise(function(resolve) {
-				fs.stat(cacheOriginUri, function(err) {
-					var stream;
-					if (err) {
-						// cache is not found.
-						console.log('%s: cache is missed', id);
-
-						stream = request(image.url);
-						stream.pipe(fs.createWriteStream(cacheOriginUri));
-					} else {
-						console.log('%s: cache is hit', id);
-						stream = fs.createReadStream(cacheOriginUri);
-					}
-
-					resolve(stream);
-				});
-			});
+			return _.pGetLocalOrRemoteFileStream(
+				image.cacheOriginalUri,
+				image.url
+			);
 		});
+};
+
+_.pGetLocalOrRemoteFileStream = function(localUri, remoteUri) {
+	var stream;
+
+	return new Promise(function(resolve) {
+		fs.stat(localUri, function(err) {
+			if (err) {
+				console.log('cache is missed: %s', localUri);
+
+				stream = request(remoteUri);
+				stream.pipe(fs.createWriteStream(localUri));
+
+			} else {
+				console.log('cache is hit: %s', localUri);
+
+				stream = fs.createReadStream(localUri);
+			}
+
+			resolve(stream);
+		});
+	});
 };
 
 _.pUpdate = function(query, update) {
