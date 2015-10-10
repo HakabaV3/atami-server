@@ -124,8 +124,24 @@ _.pCreate = function(url, tags) {
 _.pGetFileStream = function(id) {
 	return _.pFindById(id)
 		.then(function(image) {
+			if (image.cacheOriginUri) return image;
+
+			return _.pUpdate({
+					_id: new ObjectId(id)
+				}, {
+					$set: {
+						cacheOriginUri: path.join(ROOT, './original/' + id)
+					}
+				})
+				.then(function() {
+					return _.pFindById(id);
+				});
+		})
+		.then(function(image) {
+			console.log(image);
+			var cacheOriginUri = image.cacheOriginUri;
+
 			return new Promise(function(resolve) {
-				var cacheOriginUri = image.cacheOriginUri;
 				fs.stat(cacheOriginUri, function(err) {
 					var stream;
 					if (err) {
