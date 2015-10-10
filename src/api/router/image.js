@@ -56,7 +56,12 @@ function getImageSearch(req, res) {
 		return getImageAll(req, res);
 	}
 
-	Image.pFindByQuery(query)
+	Image.pFindByQuery(query, {
+			_id: true,
+			tags: true,
+			url: true,
+			proxiedUrl: true
+		})
 		.then(function(images) {
 			res.json(images);
 		})
@@ -66,7 +71,12 @@ function getImageSearch(req, res) {
 function getImageAll(req, res) {
 	console.log('getImageAll');
 
-	Image.pGetAll()
+	Image.pGetAll({
+			_id: true,
+			tags: true,
+			url: true,
+			proxiedUrl: true
+		})
 		.then(function(images) {
 			res.json(images);
 		})
@@ -84,8 +94,8 @@ function postImage(req, res) {
 	tags = body.tags;
 
 	Image.pCreate(url, tags)
-		.then(function(image) {
-			return res.json(image);
+		.then(function() {
+			return res.json('');
 		})
 		.catch(sendError(res));
 }
@@ -109,9 +119,9 @@ function getImageById(req, res) {
 	console.log('getImageById');
 	console.log(id);
 
-	Image.pFindById(id)
-		.then(function(image) {
-			request(image.url).pipe(res);
+	Image.pGetFileStream(id)
+		.then(function(stream) {
+			stream.pipe(res);
 		})
 		.catch(sendError(res));
 }
