@@ -7,6 +7,6 @@
 		"url": "mongodb://localhost:27017/atami"
 	},
 	"cache": {
-		"root": "/home/kikurage/server-dev/cache"
+		"root": "/home/kikurage/server-production/cache"
 	}
 }
