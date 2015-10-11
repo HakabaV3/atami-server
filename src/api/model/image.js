@@ -2,6 +2,7 @@
 
 var ObjectId = require('mongodb').ObjectId,
 	fs = require('fs'),
+	Readable = require('stream').Readable,
 	path = require('path'),
 	request = require('request'),
 	sharp = require('sharp'),
@@ -38,7 +39,6 @@ function pMkdir(dirpath) {
 function setup() {
 	pMkdir(path.join(ROOT));
 	pMkdir(path.join(ROOT, './original'));
-	pMkdir(path.join(ROOT, './webp'));
 
 	db.pGetDB
 		.then(function(db) {
@@ -102,8 +102,7 @@ _.pCreate = function(url, tags) {
 			idStr = id.toString(),
 			created = parseInt(Date.now() / 1000), // UNIX Time format
 			proxiedUrl = config.server.entrypoint + '/image/' + idStr,
-			cacheOriginalUri = path.join(ROOT, './original/' + idStr),
-			cacheWebpUri = path.join(ROOT, './webp/' + idStr);
+			cacheOriginalUri = path.join(ROOT, './original/' + idStr);
 
 		request(url)
 			.on('end', function() {
@@ -113,8 +112,7 @@ _.pCreate = function(url, tags) {
 					created: created,
 					url: url,
 					proxiedUrl: proxiedUrl,
-					cacheOriginalUri: cacheOriginalUri,
-					cacheWebpUri: cacheWebpUri
+					cacheOriginalUri: cacheOriginalUri
 				}, function(err, image) {
 					if (err) return reject(image);
 
@@ -123,59 +121,6 @@ _.pCreate = function(url, tags) {
 			})
 			.pipe(fs.createWriteStream(cacheOriginalUri));
 	});
-};
-
-_.pSetCacheWebpUrl = function(id) {
-	return _.pUpdate({
-		_id: new ObjectId(id)
-	}, {
-		$set: {
-			cacheWebpUri: path.join(ROOT, './webp/' + id)
-		}
-	});
-};
-
-_.pGetCacheWebpFileStream = function(id) {
-	return _.pFindById(id)
-		.then(function(image) {
-			if (image.cacheWebpUri) return image;
-
-			return _.pSetCacheWebpUrl(id)
-				.then(function() {
-					return _.pFindById(id);
-				});
-		})
-		.then(function(image) {
-			var localUri = image.cacheWebpUri,
-				stream;
-
-			return new Promise(function(resolve) {
-				fs.stat(localUri, function(err) {
-					if (err) {
-						console.log('cache is missed: %s', localUri);
-						stream = _.pGetCacheOriginalFileStream(id)
-							.then(function(stream) {
-								var encodedStream = stream.pipe(
-									sharp()
-									.quality(10)
-									.webp()
-								);
-
-								encodedStream.pipe(fs.createWriteStream(localUri));
-
-								return encodedStream;
-							});
-
-					} else {
-						console.log('cache is hit: %s', localUri);
-
-						stream = fs.createReadStream(localUri);
-					}
-
-					resolve(stream);
-				});
-			});
-		});
 };
 
 _.pSetCacheOriginalUrl = function(id) {
@@ -203,6 +148,13 @@ _.pGetCacheOriginalFileStream = function(id) {
 				image.cacheOriginalUri,
 				image.url
 			);
+		});
+};
+
+_.pGetConvertedImage = function(id, params) {
+	return _.pGetCacheOriginalFileStream(id)
+		.then(function(stream) {
+			return convertImage(stream, params);
 		});
 };
 
@@ -269,5 +221,62 @@ _.pUnsetTag = function(id, tag) {
 		}
 	});
 };
+
+function convertImage(stream, params) {
+	var image = sharp(),
+		width, height, q, output;
+
+	if (params.webp) {
+		// filter = filter.webp();
+		params.webp = false;
+	}
+
+	if (params.quality === 'high') {
+		q = 80;
+	} else if (params.quality === 'medium') {
+		q = 50;
+	} else if (params.quality === 'low') {
+		q = 20;
+	} else {
+		q = params.webp ? 20 : 40;
+	}
+
+	width = params.width || null;
+	height = params.height || null;
+
+	if (width > 0 || height > 0) {
+		if (params.stretch === 'cover' && width && height) {
+			image = image
+				.resize(width, height)
+				.min()
+				.crop(sharp.gravity.center)
+				.withoutEnlargement()
+				.quality(q);
+
+		} else if (params.stretch === 'contain' ||
+			(params.stretch === 'cover' && (!width || !height))) {
+			image = image
+				.resize(width, height)
+				.max()
+				.withoutEnlargement()
+				.quality(q);
+
+		} else {
+			image = image
+				.resize(width, height)
+				.withoutEnlargement()
+				.ignoreAspectRatio()
+				.quality(q);
+		}
+
+		stream.pipe(image);
+		output = image;
+
+	} else {
+		output = stream;
+	}
+
+	return output;
+}
 
 setup();
