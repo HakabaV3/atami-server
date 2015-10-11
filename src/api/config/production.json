@@ -2,7 +2,7 @@
 	"name": "production",
 	"server": {
 		"port": "8081",
-		"entrypoint": "http://atami.kikurage.xyz/api/v2"
+		"entrypoint": "http://atami.kikurage.xyz/api/v1"
 	},
 	"db": {
 		"url": "mongodb://localhost:27017/atami"
