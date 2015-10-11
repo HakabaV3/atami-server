@@ -2,7 +2,6 @@
 var QUERY_DELIMITER = ',';
 
 var express = require('express'),
-	request = require('request'),
 	Image = require('../model/image.js');
 
 var router = new express.Router();
@@ -119,7 +118,7 @@ function getImageById(req, res) {
 	console.log('getImageById');
 	console.log(id);
 
-	Image.pGetCacheeOrigianlFileStream(id)
+	Image.pGetCacheOriginalFileStream(id)
 		.then(function(stream) {
 			stream.pipe(res);
 		})

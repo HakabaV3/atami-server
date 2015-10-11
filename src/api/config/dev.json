@@ -1,7 +1,8 @@
 {
 	"name": "dev",
 	"server": {
-		"port": "8080"
+		"port": "8080",
+		"entrypoint": "http://atami-dev.kikurage.xyz/api/v1"
 	},
 	"db": {
 		"url": "mongodb://localhost:27017/atami-dev"

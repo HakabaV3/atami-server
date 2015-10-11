@@ -99,7 +99,7 @@ _.pCreate = function(url, tags) {
 		var id = new ObjectId(),
 			idStr = id.toString(),
 			created = parseInt(Date.now() / 1000), // UNIX Time format
-			proxiedUrl = 'http://atami.kikurage.xyz/image/' + idStr,
+			proxiedUrl = config.server.entrypoint + '/image/' + idStr,
 			cacheOriginalUri = path.join(ROOT, './original/' + idStr);
 
 		request(url)
@@ -131,7 +131,7 @@ _.pSetCacheOriginalUrl = function(id) {
 	});
 };
 
-_.pGetCacheeOrigianlFileStream = function(id) {
+_.pGetCacheOriginalFileStream = function(id) {
 	return _.pFindById(id)
 		.then(function(image) {
 			if (image.cacheOriginalUri) return image;
