@@ -4,6 +4,7 @@ var ObjectId = require('mongodb').ObjectId,
 	fs = require('fs'),
 	path = require('path'),
 	request = require('request'),
+	sharp = require('sharp'),
 	db = require('../util/db.js'),
 	config = require('../config.js');
 
@@ -37,6 +38,7 @@ function pMkdir(dirpath) {
 function setup() {
 	pMkdir(path.join(ROOT));
 	pMkdir(path.join(ROOT, './original'));
+	pMkdir(path.join(ROOT, './webp'));
 
 	db.pGetDB
 		.then(function(db) {
@@ -100,7 +102,8 @@ _.pCreate = function(url, tags) {
 			idStr = id.toString(),
 			created = parseInt(Date.now() / 1000), // UNIX Time format
 			proxiedUrl = config.server.entrypoint + '/image/' + idStr,
-			cacheOriginalUri = path.join(ROOT, './original/' + idStr);
+			cacheOriginalUri = path.join(ROOT, './original/' + idStr),
+			cacheWebpUri = path.join(ROOT, './webp/' + idStr);
 
 		request(url)
 			.on('end', function() {
@@ -110,7 +113,8 @@ _.pCreate = function(url, tags) {
 					created: created,
 					url: url,
 					proxiedUrl: proxiedUrl,
-					cacheOriginalUri: cacheOriginalUri
+					cacheOriginalUri: cacheOriginalUri,
+					cacheWebpUri: cacheWebpUri
 				}, function(err, image) {
 					if (err) return reject(image);
 
@@ -119,6 +123,59 @@ _.pCreate = function(url, tags) {
 			})
 			.pipe(fs.createWriteStream(cacheOriginalUri));
 	});
+};
+
+_.pSetCacheWebpUrl = function(id) {
+	return _.pUpdate({
+		_id: new ObjectId(id)
+	}, {
+		$set: {
+			cacheWebpUri: path.join(ROOT, './webp/' + id)
+		}
+	});
+};
+
+_.pGetCacheWebpFileStream = function(id) {
+	return _.pFindById(id)
+		.then(function(image) {
+			if (image.cacheWebpUri) return image;
+
+			return _.pSetCacheWebpUrl(id)
+				.then(function() {
+					return _.pFindById(id);
+				});
+		})
+		.then(function(image) {
+			var localUri = image.cacheWebpUri,
+				stream;
+
+			return new Promise(function(resolve) {
+				fs.stat(localUri, function(err) {
+					if (err) {
+						console.log('cache is missed: %s', localUri);
+						stream = _.pGetCacheOriginalFileStream(id)
+							.then(function(stream) {
+								var encodedStream = stream.pipe(
+									sharp()
+									.quality(10)
+									.webp()
+								);
+
+								encodedStream.pipe(fs.createWriteStream(localUri));
+
+								return encodedStream;
+							});
+
+					} else {
+						console.log('cache is hit: %s', localUri);
+
+						stream = fs.createReadStream(localUri);
+					}
+
+					resolve(stream);
+				});
+			});
+		});
 };
 
 _.pSetCacheOriginalUrl = function(id) {

@@ -3,3 +3,5 @@ npm install
 sudo npm rebuild
 sudo cp ./nginx.conf /etc/nginx/nginx.conf
 sudo nginx -s reload
+
+#@TODO check whether vips is installed, and if not, install it.

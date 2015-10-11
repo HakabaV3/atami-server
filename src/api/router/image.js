@@ -10,6 +10,7 @@ router.post('/:id/tag', postTag);
 router.delete('/:id/tag', deleteTag);
 router.get('/search', getImageSearch);
 router.get('/all', getImageAll);
+router.get('/webp/:id', getImageByIdAsWebp);
 router.get('/:id', getImageById);
 router.post('/', postImage);
 router.delete('/:id', deleteImageById);
@@ -108,6 +109,19 @@ function deleteImageById(req, res) {
 	Image.pRemove(id)
 		.then(function() {
 			res.send('');
+		})
+		.catch(sendError(res));
+}
+
+function getImageByIdAsWebp(req, res) {
+	var id = req.params.id;
+
+	console.log('getImageByIdAsWebp');
+	console.log(id);
+
+	Image.pGetCacheWebpFileStream(id)
+		.then(function(stream) {
+			stream.pipe(res);
 		})
 		.catch(sendError(res));
 }
