@@ -10,7 +10,6 @@ router.post('/:id/tag', postTag);
 router.delete('/:id/tag', deleteTag);
 router.get('/search', getImageSearch);
 router.get('/all', getImageAll);
-router.get('/webp/:id', getImageByIdAsWebp);
 router.get('/:id', getImageById);
 router.post('/', postImage);
 router.delete('/:id', deleteImageById);
@@ -113,26 +112,23 @@ function deleteImageById(req, res) {
 		.catch(sendError(res));
 }
 
-function getImageByIdAsWebp(req, res) {
-	var id = req.params.id;
-
-	console.log('getImageByIdAsWebp');
-	console.log(id);
-
-	Image.pGetCacheWebpFileStream(id)
-		.then(function(stream) {
-			stream.pipe(res);
-		})
-		.catch(sendError(res));
-}
-
 function getImageById(req, res) {
-	var id = req.params.id;
+	var query = req.query,
+		id = req.params.id;
+
+	var params = {
+		webp: (query.webp === '1'),
+		width: parseInt(query.w),
+		height: parseInt(query.h),
+		stretch: query.stretch,
+		quality: query.q
+	};
 
 	console.log('getImageById');
 	console.log(id);
+	console.log(params);
 
-	Image.pGetCacheOriginalFileStream(id)
+	Image.pGetConvertedImage(id, params)
 		.then(function(stream) {
 			stream.pipe(res);
 		})
