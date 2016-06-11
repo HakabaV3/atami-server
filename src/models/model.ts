@@ -37,6 +37,14 @@ export class Model {
             });
     }
 
+    static pFindAll(query: Object) {
+        return db.pGetCollection(this.name)
+            .then(collection => collection.find(query).limit(20).toArray())
+            .then(items => {
+                return items.map(item => this.upgrade(item));
+            });
+    }
+
     static pUpdateById(id: UUID, data: Object) {
         return db.pGetCollection(this.name)
             .then(collection => collection.findOneAndUpdate({
