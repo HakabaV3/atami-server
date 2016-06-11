@@ -5,8 +5,7 @@ import * as request from 'request'
 export const router = express.Router()
 
 router.get('/proxy/:id', function(req: express.Request, res: express.Response, next: express.NextFunction) {
-    console.log("!");
-    Image.pFindById(req.param('id'))
+    Image.pFindById(req.query('id'))
         .then((image: Image) => {
             console.log(image.constructor);
             request.get(image.originalUrl).pipe(res);
@@ -17,8 +16,7 @@ router.get('/proxy/:id', function(req: express.Request, res: express.Response, n
 });
 
 router.get('/:id', function(req: express.Request, res: express.Response, next: express.NextFunction) {
-    console.log(req.param('id'));
-    Image.pFindById(req.param('id'))
+    Image.pFindById(req.query('id'))
         .then(image => {
             return res.json(image.downgrade());
         })
