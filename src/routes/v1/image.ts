@@ -21,8 +21,7 @@ router.get('/search', function(req: express.Request, res: express.Response, next
 });
 
 router.get('/proxy/:id', function(req: express.Request, res: express.Response, next: express.NextFunction) {
-    console.log("!");
-    Image.pFindById(req.param('id'))
+    Image.pFindById(req.query('id'))
         .then((image: Image) => {
             request.get(image.originalUrl).pipe(res);
         })
@@ -32,8 +31,7 @@ router.get('/proxy/:id', function(req: express.Request, res: express.Response, n
 });
 
 router.get('/:id', function(req: express.Request, res: express.Response, next: express.NextFunction) {
-    console.log(req.param('id'));
-    Image.pFindById(req.param('id'))
+    Image.pFindById(req.query('id'))
         .then(image => {
             return res.json(image.downgrade());
         })
