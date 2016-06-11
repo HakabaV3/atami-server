@@ -31,7 +31,7 @@ router.post('/', function(req: express.Request, res: express.Response, next: exp
     image.tags = req.body.tags;
 
     //@TODO ハードコードなくす
-    image.proxiedUrl = `https://amp.kikurage.xyz/v1/image/proxy/${image.id}`;
+    image.proxiedUrl = `https://atami.kikurage.xyz/v1/image/proxy/${image.id}`;
 
     image.pSave()
         .then(() => {
