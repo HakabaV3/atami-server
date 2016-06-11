@@ -10,7 +10,7 @@ router.get('/:id', function(req: express.Request, res: express.Response, next: e
             return res.json(image.downgrade());
         })
         .catch(err => {
-            res.send(404);
+            res.sendStatus(404);
         });
 });
 
