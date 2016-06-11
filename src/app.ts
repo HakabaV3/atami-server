@@ -10,6 +10,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
+app.use('/api', index);
 app.use('/', index);
 
 app.use(function (req: express.Request, res: express.Response, next: express.NextFunction) {
