@@ -35,23 +35,41 @@ router.get('/:id', function(req: express.Request, res: express.Response, next: e
         .then(image => {
             return res.json(image.downgrade());
         })
-        .catch(err => {
-            res.sendStatus(404);
-        });
+        .catch(err => res.sendStatus(404));
 });
 
 router.post('/', function(req: express.Request, res: express.Response, next: express.NextFunction) {
-    let image = Image.upgrade({
-        originalUrl: req.body.url,
-        tags: req.body.tags || []
-    }) as Image;
+    let image: Image;
 
-    //@TODO ハードコードなくす
-    image.proxiedUrl = `https://atami.kikurage.xyz/v1/image/proxy/${image.id}`;
+    Image.pFindAll({
+        originalUrl: req.body.url
+    })
+    .then((images: Image[]) => {
+        if (images.length > 0) {
+            image = images[0];
 
-    image.pSave()
-        .then(() => {
-            res.status(200);
-            res.json(image.downgrade())
-        });
+            let tags = (req.body.tags || []) as string[];
+
+            tags.forEach(tag => {
+                if (image.tags.indexOf(tag) == -1) {
+                    image.tags.push(tag);
+                }
+            });
+        } else {
+            image = Image.upgrade({
+                originalUrl: req.body.url,
+                tags: req.body.tags || []
+            }) as Image;
+
+            //@TODO ハードコードなくす
+            image.proxiedUrl = `https://atami.kikurage.xyz/v1/image/proxy/${image.id}`;
+        }
+
+        return image.pSave()
+    })
+    .then(() => {
+        res.status(200);
+        res.json(image.downgrade())
+    })
+    .catch(err => res.sendStatus(503));
 });
