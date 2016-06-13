@@ -66,7 +66,7 @@ router.post('/', function(req: express.Request, res: express.Response, next: exp
         } else {
             image = Image.upgrade({
                 originalUrl: req.body.url,
-                tags: req.body.tags || []
+                tags: tags
             }) as Image;
 
             //@TODO ハードコードなくす
