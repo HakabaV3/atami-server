@@ -39,7 +39,10 @@ router.get('/:id', function(req: express.Request, res: express.Response, next: e
 });
 
 router.post('/', function(req: express.Request, res: express.Response, next: express.NextFunction) {
-    let image: Image;
+    let image: Image,
+        tags = (req.body.tags || []) as string[];
+
+    tags = tags.map(tag => tag.toLowerCase());
 
     Image.pFindAll({
         originalUrl: req.body.url
@@ -47,8 +50,6 @@ router.post('/', function(req: express.Request, res: express.Response, next: exp
     .then((images: Image[]) => {
         if (images.length > 0) {
             image = images[0];
-
-            let tags = (req.body.tags || []) as string[];
 
             tags.forEach(tag => {
                 if (image.tags.indexOf(tag) == -1) {
