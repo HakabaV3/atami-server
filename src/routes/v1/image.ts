@@ -5,7 +5,10 @@ import * as request from 'request'
 export const router = express.Router()
 
 router.get('/search', function(req: express.Request, res: express.Response, next: express.NextFunction) {
-    let query = req.query.q as string;
+    let query = (req.query.q as string)
+        .toLowerCase()
+        .replace(/\w/g, '');
+
     Image.pFindAll({
             tags: {
                 $in: [query]
@@ -42,7 +45,11 @@ router.post('/', function(req: express.Request, res: express.Response, next: exp
     let image: Image,
         tags = (req.body.tags || []) as string[];
 
-    tags = tags.map(tag => tag.toLowerCase());
+    tags = tags.map(tag => {
+        return tag
+            .toLowerCase()
+            .replace(/\w/g, '');
+    });
 
     Image.pFindAll({
         originalUrl: req.body.url
